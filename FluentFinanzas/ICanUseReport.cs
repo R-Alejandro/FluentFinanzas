@@ -1,6 +1,7 @@
 namespace FluentFinanzas;
 
-public interface ICanGenerateReport
+public interface ICanUseReport
 {
+    public string PrintReport();
     public void ExportReport(string reportPath);
 }
