@@ -1,3 +1,13 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿
+using System.Globalization;
+using FluentFinanzas;
 
-Console.WriteLine("Hello, World!");
+
+
+// var report = ReportGenerator.CreateReport();
+
+DateOnly d = DateOnly.ParseExact("20250420", "yyyyMMdd", CultureInfo.InvariantCulture);
+
+
+Console.WriteLine(d.ToString("yyyy MMM dd"));
+
