@@ -1,4 +1,7 @@
 ﻿
+using FluentFinanzas;
 
 
-Console.WriteLine("something here");
+
+var report = ReportGenerator.CreateReport();
+
