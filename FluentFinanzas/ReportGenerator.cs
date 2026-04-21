@@ -21,6 +21,19 @@ public class ReportGenerator :
     private StringBuilder _content;
     private CurrencySymbol _currencySymbol = CurrencySymbol.Cop;
     private IEnumerable<IEntity> _data;
+
+    //hacer una clase aparte para esto
+    private Dictionary<CurrencySymbol, Dictionary<CurrencySymbol, Func<decimal, decimal>>> _currencyConverter =
+        new()
+        {
+            {
+                CurrencySymbol.Cop,
+                new Dictionary<CurrencySymbol, Func<decimal, decimal>>()
+                {
+                    { CurrencySymbol.Usd, (amount) => amount * 3580.22m }
+                }
+            }
+        };
     
     private ReportGenerator()
     {
@@ -50,15 +63,20 @@ public class ReportGenerator :
         //obtiene data del archivo y filtra
         var d = new List<IEntity>()
         {
-            new Item{Date = new DateOnly(2025,4,2), Desc = "d",Category=  "c", Amount =23500m,Type = "i",Currency= "Cop",Origin= "b"},
-            new Item{Date = new DateOnly(2025,4,2), Desc = "d",Category=  "c", Amount =23500m,Type = "e",Currency= "Cop",Origin= "b"},
-            new Item{Date = new DateOnly(2025,4,2), Desc = "d",Category=  "c", Amount =500m,Type = "i",Currency= "Cop",Origin= "b"},
-            new Item{Date = new DateOnly(1999,4,2), Desc = "d",Category=  "c", Amount =23500m,Type = "e",Currency= "Cop",Origin= "b"},
+            new Item{Date = new DateOnly(2025,4,2), Desc = "d",Category=  "c", Amount =23500m,Type = "i",Currency= CurrencySymbol.Cop,Origin= "b"},
+            new Item{Date = new DateOnly(2025,4,2), Desc = "d",Category=  "c", Amount =235m,Type = "e",Currency= CurrencySymbol.Usd,Origin= "b"},
+            new Item{Date = new DateOnly(2025,4,2), Desc = "d",Category=  "c", Amount =500m,Type = "i",Currency= CurrencySymbol.Cop,Origin= "b"},
+            new Item{Date = new DateOnly(2001,4,2), Desc = "d",Category=  "c", Amount =10000m,Type = "e",Currency=CurrencySymbol.Cop,Origin= "b"},
         };
         _data = _filters.Aggregate(
             d.AsEnumerable(),
             (actual, filtro) => actual.Where(filtro)
         );
+
+        foreach (var item in _data.Where(x => x.Currency != _currencySymbol))
+        {
+            item.Amount = _currencyConverter[_currencySymbol][item.Currency](item.Amount);
+        }
         return this;
     }
 
@@ -74,6 +92,18 @@ public class ReportGenerator :
             _content.AppendLine($"{VARIABLE.Type}: {VARIABLE.Total}");
         }
         
+        return this;
+    }
+
+    public ICanSetTable AddGeneralBalance()
+    {
+        throw new NotImplementedException();
+        return this;
+    }
+
+    public ICanSetTable AddTotalByOrigin(int order)
+    {
+        throw new NotImplementedException();
         return this;
     }
 

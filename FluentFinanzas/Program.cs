@@ -20,3 +20,14 @@ Console.WriteLine(report);
 //
 // Console.WriteLine(d.ToString("yyyy MMM dd"));
 
+// if (Enum.TryParse<CurrencySymbol>("Cop", out var currency))
+// {
+//     Console.WriteLine(currency);
+// }
+
+
+/* PREGUNTAS
+ 
+ 1) hay una mejor manera de cargar los datos a Item sin dejar todas las propiedades con setter?
+ 2) si es buena idea dejar el setter para transformar el Amount, no se cambia en el archivo pero si en el Enuemrable
+ */
