@@ -2,8 +2,8 @@ namespace FluentFinanzas;
 
 public interface ICanSetTable : ICanBuildReport
 {
-    public ICanSetData AddTotalByType();
-    public ICanSetData AddGeneralBalance();
-    public ICanSetData AddTotalByOrigin(int order);
+    public ICanSetTable AddTotalByType();
+    // public ICanSetTable AddGeneralBalance();
+    // public ICanSetTable AddTotalByOrigin(int order);
     
 }

@@ -2,5 +2,5 @@ namespace FluentFinanzas;
 
 public interface ICanSetCurrency
 {
-    public ICanSetData WithCurrency(string currencySymbol);
+    public ICanSetData WithCurrency(CurrencySymbol currencySymbol);
 }
