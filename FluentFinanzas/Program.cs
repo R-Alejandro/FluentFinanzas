@@ -9,6 +9,7 @@ var report = ReportGenerator.CreateReport()
     .WithCurrency(CurrencySymbol.Cop)
     .WithDataFile("data")
     .AddTotalByType()
+    .AddGeneralBalance()
     .BuildReport()
     .PrintReport();
 Console.WriteLine(report);

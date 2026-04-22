@@ -8,6 +8,12 @@ public enum CurrencySymbol
     Usd
 }
 
+public enum MovementType
+{
+    Income,
+    Expense
+}
+
 public class ReportGenerator :
     ICanSetDate,
     ICanSetCurrency,
@@ -63,16 +69,18 @@ public class ReportGenerator :
         //obtiene data del archivo y filtra
         var d = new List<IEntity>()
         {
-            new Item{Date = new DateOnly(2025,4,2), Desc = "d",Category=  "c", Amount =23500m,Type = "i",Currency= CurrencySymbol.Cop,Origin= "b"},
-            new Item{Date = new DateOnly(2025,4,2), Desc = "d",Category=  "c", Amount =235m,Type = "e",Currency= CurrencySymbol.Usd,Origin= "b"},
-            new Item{Date = new DateOnly(2025,4,2), Desc = "d",Category=  "c", Amount =500m,Type = "i",Currency= CurrencySymbol.Cop,Origin= "b"},
-            new Item{Date = new DateOnly(2001,4,2), Desc = "d",Category=  "c", Amount =10000m,Type = "e",Currency=CurrencySymbol.Cop,Origin= "b"},
+            new Item{Date = new DateOnly(2025,4,2), Desc = "d",Category=  "c", Amount =23500m,Type = MovementType.Income,Currency= CurrencySymbol.Cop,Origin= "b"},
+            new Item{Date = new DateOnly(2025,4,2), Desc = "d",Category=  "c", Amount =235m,Type = MovementType.Expense,Currency= CurrencySymbol.Usd,Origin= "b"},
+            new Item{Date = new DateOnly(2025,4,2), Desc = "d",Category=  "c", Amount =500m,Type =MovementType.Income,Currency= CurrencySymbol.Cop,Origin= "b"},
+            new Item{Date = new DateOnly(2001,4,2), Desc = "d",Category=  "c", Amount =10000m,Type = MovementType.Expense,Currency=CurrencySymbol.Cop,Origin= "b"},
         };
+        
         _data = _filters.Aggregate(
             d.AsEnumerable(),
             (actual, filtro) => actual.Where(filtro)
         );
 
+        //convierte a la moneda
         foreach (var item in _data.Where(x => x.Currency != _currencySymbol))
         {
             item.Amount = _currencyConverter[_currencySymbol][item.Currency](item.Amount);
@@ -82,14 +90,17 @@ public class ReportGenerator :
 
     public ICanSetTable AddTotalByType()
     {
-        var f = _data
+        var table = _data
             .GroupBy(
                 x => x.Type,
                 (type, total) => new { Type = type, Total = total.Sum(x => x.Amount) }
             );
-        foreach (var VARIABLE in f)
+        _content.AppendLine($"\nTOTAL BY TYPE $({_currencySymbol})");
+        _content.AppendLine("-------------------");
+        foreach (var row in table)
         {
-            _content.AppendLine($"{VARIABLE.Type}: {VARIABLE.Total}");
+            _content.AppendLine($"| {row.Type} | {row.Total:C2} |");
+            _content.AppendLine("-------------------");
         }
         
         return this;
@@ -97,7 +108,19 @@ public class ReportGenerator :
 
     public ICanSetTable AddGeneralBalance()
     {
-        throw new NotImplementedException();
+        var totalIncomes = _data
+            .Where(x=> x.Type == MovementType.Income)
+            .Sum(x=> x.Amount);
+        var totalExpenses = _data
+            .Where(x=> x.Type == MovementType.Expense)
+            .Sum(x=> x.Amount);
+        
+        var totalCash = totalIncomes - totalExpenses;
+        
+        _content.AppendLine("\n-------------------");
+        _content.AppendLine($"CURRENT BALANCE {totalCash:C2} {_currencySymbol}");
+        _content.AppendLine("-------------------");
+        
         return this;
     }
 
