@@ -71,7 +71,7 @@ public class ReportGenerator :
         {
             new Item{Date = new DateOnly(2025,4,2), Desc = "d",Category=  "c", Amount =23500m,Type = MovementType.Income,Currency= CurrencySymbol.Cop,Origin= "b"},
             new Item{Date = new DateOnly(2025,4,2), Desc = "d",Category=  "c", Amount =235m,Type = MovementType.Expense,Currency= CurrencySymbol.Usd,Origin= "b"},
-            new Item{Date = new DateOnly(2025,4,2), Desc = "d",Category=  "c", Amount =500m,Type =MovementType.Income,Currency= CurrencySymbol.Cop,Origin= "b"},
+            new Item{Date = new DateOnly(2025,4,2), Desc = "d",Category=  "c", Amount =500m,Type =MovementType.Income,Currency= CurrencySymbol.Cop,Origin= "other bank"},
             new Item{Date = new DateOnly(2001,4,2), Desc = "d",Category=  "c", Amount =10000m,Type = MovementType.Expense,Currency=CurrencySymbol.Cop,Origin= "b"},
         };
         
@@ -91,10 +91,11 @@ public class ReportGenerator :
     public ICanSetTable AddTotalByType()
     {
         var table = _data
-            .GroupBy(
-                x => x.Type,
-                (type, total) => new { Type = type, Total = total.Sum(x => x.Amount) }
-            );
+            .GroupBy(x => x.Type)
+            .Select(x => new
+            {
+                Type = x.Key, Total = x.Sum(y => y.Amount)
+            });
         _content.AppendLine($"\nTOTAL BY TYPE $({_currencySymbol})");
         _content.AppendLine("-------------------");
         foreach (var row in table)
@@ -126,7 +127,39 @@ public class ReportGenerator :
 
     public ICanSetTable AddTotalByOrigin(int order)
     {
-        throw new NotImplementedException();
+        var table = _data
+            .GroupBy(x => x.Origin)
+            .Select(g =>
+            {
+                decimal income = 0;
+                decimal expense = 0;
+
+                foreach (var item in g)
+                {
+                    if (item.Type == MovementType.Income)
+                        income += item.Amount;
+                    else if (item.Type == MovementType.Expense)
+                        expense += item.Amount;
+                }
+
+                return new
+                {
+                    Origin = g.Key, 
+                    Income = income, 
+                    Expense = expense, 
+                    Total = income - expense
+                };
+            });
+        
+        _content.AppendLine($"\nTOTAL BY ORIGIN $({_currencySymbol})");
+        _content.AppendLine("------------------------------------------------");
+        _content.AppendLine("origin | incomes | expenses | total |");
+        _content.AppendLine("------------------------------------------------");
+        foreach (var row in table)
+        {
+            _content.AppendLine($"{row.Origin} | {row.Income:C2} | {row.Expense:C2} | {row.Total:C2} |");
+            _content.AppendLine("------------------------------------------------");
+        }
         return this;
     }
 

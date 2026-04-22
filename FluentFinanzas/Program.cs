@@ -10,6 +10,7 @@ var report = ReportGenerator.CreateReport()
     .WithDataFile("data")
     .AddTotalByType()
     .AddGeneralBalance()
+    .AddTotalByOrigin(0)
     .BuildReport()
     .PrintReport();
 Console.WriteLine(report);
